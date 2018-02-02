@@ -227,6 +227,23 @@ void UKF::Prediction(double delta_t) {
     Xsig_pred(3, i) = yaw_p;
     Xsig_pred(4, i) = yawd_p;
   }
+
+  /* It comes from UKF lecture 23. */
+  x_ = Xsig_pred_ * weigths_;
+  P_.fill(0.0);
+
+  for(int i = 0; i < n_sig_; i++)
+  {
+    VectorXd x_diff = Xsig_pred_.col(i) - x_;
+
+    while(x_diff(3) > M_PI)
+      x_diff(3) -= 2.0 * M_PI;
+
+    while(x_diff(3) < -M_PI)
+      x_diff(3) += 2.0 * M_PI;
+
+    P_ = P_ + weights(i) * x_diff * x_diff.transpose();
+  }
 }
 
 /**
