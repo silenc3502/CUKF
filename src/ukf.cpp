@@ -54,6 +54,24 @@ UKF::UKF() {
 
   Hint: one or more values initialized above might be wildly off...
   */
+
+  /* It comes from part of UKF lecture 14, 17, and 23. */
+  n_x_ = x_.size();
+  n_aug_ = n_x_ + 2;
+  n_sig_ = 2 * n_aug_ + 1;
+  Xsig_pred_ = MatrixXd(n_x_, n_sig_);
+  lambda_ = 3 - n_aug;
+  weights_ = VectorXd(n_sig_);
+
+  /* Init Measurement Noise Covariance Matrices */
+  R_radar_ = MatrixXd(3, 3);
+  R_radar_ << pow(std_radr_, 2), 0, 0,
+              0, pow(std_radphi_, 2), 0,
+              0, 0, pow(std_radrd_, 2);
+
+  R_lidar_ = MatrixXd(2, 2);
+  R_lidar_ << pow(std_laspx_, 2), 0,
+              0, pow(std_laspy_, 2);
 }
 
 UKF::~UKF() {}
