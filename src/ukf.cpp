@@ -69,6 +69,13 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   Complete this function! Make sure you switch between lidar and radar
   measurements.
   */
+
+  /* It's come from FusionEKF.cpp and add CTRV Model */
+  P_ << 1, 0, 0, 0, 0,
+	0, 1, 0, 0, 0,
+	0, 0, 1, 0, 0,
+	0, 0, 0, 1, 0,
+	0, 0, 0, 0, 1;
 }
 
 /**
