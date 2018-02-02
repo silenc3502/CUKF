@@ -138,7 +138,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     return;
   }
 
-  float dt = (measurement_pack.timestamp_ - time_us_);
+  double dt = (measurement_pack.timestamp_ - time_us_);
   dt /= 1000000.0;
   time_us_ = measurement_pack.timestamp_;
   Prediction(dt);
@@ -187,7 +187,46 @@ void UKF::Prediction(double delta_t) {
 
   /* It comes from UKF lecture 20.
      Sigma Point Prediction */
-  
+  for(int i = 0; i < n_sig_; i++)
+  {
+    double p_x = Xsig_aug(0, i);
+    double p_y = Xsig_aug(1, i);
+    double v = Xsig_aug(2, i);
+    double yaw = Xsig_aug(3, i);
+    double yawd = Xsig_aug(4, i);
+    double nu_a = Xsig_aug(5, i);
+    double nu_yawdd = Xsig_aug(6, i);
+
+    double px_p, py_p;
+
+    if(fabs(yawd) > EPSILON)
+    {
+      px_p = p_x + v / yawd * (sin(yaw + yawd * delta_t) - sin(yaw));
+      py_p = p_y + v / yawd * (cos(yaw) - cos(yaw + yawd * delta_t));
+    }
+    else
+    {
+      px_p = p_x + v * delta_t * cos(yaw);
+      py_p = p_y + v * delta_t * sin(yaw);
+    }
+
+    double v_p = v;
+    double yaw_p = yaw + yawd * delta_t;
+    double yawd_p = yawd;
+
+    px_p = px_p + 0.5 * nu_a * pow(delta_t, 2) * cos(yaw);
+    py_p = py_p + 0.5 * nu_a * pow(delta_t, 2) * sin(yaw);
+    v_p = v_p + nu_a * delta_t;
+
+    yaw_p = yaw_p + 0.5 * nu_yawdd * pow(delta_t, 2);
+    yawd_p = yawd_p + nu_yawdd * delta_t;
+
+    Xsig_pred(0, i) = px_p;
+    Xsig_pred(1, i) = py_p;
+    Xsig_pred(2, i) = v_p;
+    Xsig_pred(3, i) = yaw_p;
+    Xsig_pred(4, i) = yawd_p;
+  }
 }
 
 /**
