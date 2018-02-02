@@ -162,6 +162,32 @@ void UKF::Prediction(double delta_t) {
   Complete this function! Estimate the object's location. Modify the state
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
+
+  /* It comes from UKF lecture 17. */
+  VectorXd x_aug = VectorXd(n_aug_);
+  MatrixXd P_aug = MatrixXd(n_aug_, n_aug_);
+  MatrixXd Xsig_aug = MatrixXd(n_aug, n_sig_);
+
+  x_aug.fill(0.0);
+  x_aug.head(n_x_) = x_;
+  P_aug.fill(0);
+  P_aug.topLeftCorner(n_x_, n_x_) = P_;
+  P_aug(n_x_, n_x_) = pow(std_a_, 2);
+  P_aug(n_x_ + 1, n_x_ + 1) = pow(std_yawdd_, 2);
+
+  MatrixXd L = P_aug.llt().matrixL();
+
+  XSig_aug.col(0) = x_aug;
+
+  for(int i = 0; i < n_aug; i++)
+  {
+    Xsig_aug.col(i + 1) = x_aug + sqrt(lambda + n_aug) * L.col(i);
+    Xsig_aug.col(i + 1 + n_aug) = x_aug - sqrt(lambda + n_aug) * L.col(i);
+  }
+
+  /* It comes from UKF lecture 20.
+     Sigma Point Prediction */
+  
 }
 
 /**
