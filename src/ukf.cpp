@@ -274,4 +274,25 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the radar NIS.
   */
+
+  /* It comes from UKF lecture 26 */
+  int n_z = 3;
+  MatrixXd Zsig = MatrixXd(n_z, n_sig_);
+
+  for(int i = 0; i < n_sig_; i++)
+  {
+    double p_x = Xsig_pred(0, i);
+    double p_y = Xsig_pred(1, i);
+    double v = Xsig_pred(2, i);
+    double yaw = Xsig_pred(3, i);
+
+    double v1 = cos(yaw) * v;
+    double v2 = sin(yaw) * v;
+
+    Zsig(0, i) = sqrt(pow(p_x, 2) + pow(p_y, 2));
+    Zsig(1, i) = atan2(p_y, p_x);
+    Zsig(2, i) = (p_x * v1 + p_y * v2) / Zsig(0, i);
+  }
+
+  UpdateConditionalUKF(meas_package, Zsig, n_z);
 }
