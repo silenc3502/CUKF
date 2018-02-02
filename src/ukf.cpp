@@ -2,6 +2,8 @@
 #include "Eigen/Dense"
 #include <iostream>
 
+#define EPSILON	0.0001
+
 using namespace std;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -88,12 +90,54 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   measurements.
   */
 
-  /* It's come from FusionEKF.cpp and add CTRV Model */
-  P_ << 1, 0, 0, 0, 0,
-	0, 1, 0, 0, 0,
-	0, 0, 1, 0, 0,
-	0, 0, 0, 1, 0,
-	0, 0, 0, 0, 1;
+  if(!is_initialized_)
+  {
+    /* It's come from FusionEKF.cpp and add CTRV Model */
+    P_ << 1, 0, 0, 0, 0,
+	  0, 1, 0, 0, 0,
+	  0, 0, 1, 0, 0,
+	  0, 0, 0, 1, 0,
+	  0, 0, 0, 0, 1;
+
+    if(measurement_pack.sensor_type_ == MeasurementPackage::RADAR)
+    {
+      float rho = measurement_pack.raw_measurements_[0];
+      float phi = measurement_pack.raw_measurements_[1];
+      float rho_dot = measurement_pack.raw_measurements_[2];
+
+      float px = rho * cos(phi);
+      float py = rho * sin(phi);
+      float vx = rho_dot * cos(phi);
+      float vy = rho_dot * sin(phi);
+      float v = sqrt(pow(vx, 2) + pow(vy, 2));
+
+      x_ << px, py, v, 0, 0;
+    }
+    else if(measurement_pack.sensor_type_ == MeasurementPackage::LASER)
+    {
+      x_ << measurement_pack.raw_measurements_[0],
+            measurement_pack.raw_measurements_[1],
+            0,
+            0,
+            0;
+
+      if(fabs(x_(0)) < EPSILON && fabs(x_(1)) < EPSILON)
+      {
+        x_(0) = EPSILON;
+        x_(1) = EPSILON;
+      }
+    }
+
+    weights_(0) = lambda_ / (lambda_ + n_aug_);
+    for(int i = 1; i < weights_.size(); i++)
+      weights_(i) = 0.5 / (n_aug_ + lambda_);
+
+    time_us_ = measurement_pack.timestamp_;
+    is_initialized_ = true;
+
+    return;
+  }
+
 }
 
 /**
