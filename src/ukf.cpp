@@ -138,6 +138,16 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     return;
   }
 
+  float dt = (measurement_pack.timestamp_ - time_us_);
+  dt /= 1000000.0;
+  time_us_ = measurement_pack.timestamp_;
+  Prediction(dt);
+
+  if(measurement_pack.sensor_type_ == MeasurementPackage::RADAR && use_radar_)
+    UpdateRadar(measurement_pack);
+
+  if(measurement_pack.sensor_type_ == MeasurementPackage::LASER && use_laser_)
+    UpdateLidar(measurement_pack);
 }
 
 /**
