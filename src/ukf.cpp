@@ -337,9 +337,17 @@ void UKF::UpdateConditionalUKF(MeasurementPackage mp, MatrixXd zs, int n_z)
   else if(mp.sensor_type_ == MeasurementPackage::LASER)
 #endif
 
-  R << pow(std_radr_, 2), 0, 0,
-       0, pow(std_radphi_, 2), 0,
-       0, 0, pow(std_radrd_, 2);
+  if(mp.sensor_type_ == MeasurementPackage::RADAR)
+  {
+    R << pow(std_radr_, 2), 0, 0,
+         0, pow(std_radphi_, 2), 0,
+         0, 0, pow(std_radrd_, 2);
+  }
+  else if(mp.sensor_type_ == MeasurementPackage::LASER)
+  {
+    R << pow(std_laspx_, 2), 0,
+         0, pow(std_laspy_, 2);
+  }
 
   S = S + R;
 
