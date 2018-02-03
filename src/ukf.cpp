@@ -296,3 +296,77 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   UpdateConditionalUKF(meas_package, Zsig, n_z);
 }
+
+/* It comes from UKF lecture 26, and 29. */
+void UKF::UpdateConditionalUKF(MeasurementPackage mp, MatrixXd zs, int n_z)
+{
+  /* Here is 26 part. */
+  VectorXd z_pred = VectorXd(n_z);
+  MatrixXd S = MatrixXd(n_z, n_z);
+  z_pred = zs * weights_;
+
+  S.fill(0.0);
+
+  for(int i = 0; i < n_sig_; i++)
+  {
+    VectorXd z_diff = zs.col(i) - z_pred;
+
+    while(z_diff(1) > M_PI)
+      z_diff(1) -= 2.0 * M_PI;
+
+    while(z_diff(1) < -M_PI)
+      z_diff(1) += 2.0 * M_PI;
+
+    S = S + weights_(i) * z_diff * z_diff.transpose();
+  }
+
+  MatrixXd R = MatrixXd(n_z, n_z);
+
+  if(mp.sensor_type_ == MeasurementPackage::RADAR)
+    R = R_radar_;
+  else if(mp.sensor_type_ == MeasurementPackage::LASER)
+    R = R_lidar_;
+
+  S = S + R;
+
+  /* Here is 29 part. */
+  MatrixXd Tc = MatrixXd(n_x, n_z);
+  Tc.fill(0, 0);
+  for(int i = 0; i < n_sig_; i++)
+  {
+    VectorXd z_diff = Zsig.col(i) - z_pred;
+    if(mp.sensor_type_ == MEASUREMENT::RADAR)
+    {
+      while(z_diff(1) > M_PI)
+        z_diff(1) -= 2.0 * M_PI;
+
+      while(z_diff(1) < -M_PI)
+        z_diff(1) += 2.0 * M_PI;
+    }
+
+    VectorXd x_diff = Xsig_pred.col(i) - x;
+
+    while(x_diff(3) > M_PI)
+      x_diff(3) -= 2.0 * M_PI;
+
+    while(x_diff(3) < -M_PI)
+      x_diff(3) += 2.0 * M_PI;
+
+    Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
+  }
+
+  MatrixXd K = Tc * S.inverse();
+  VectorXd z_diff = z - z_pred;
+
+  if(mp.sensor_type_ == MeasurementPackage::RADAR)
+  {
+    while(z_diff(1) > M_PI)
+      z_diff(1) -= 2.0 * M_PI;
+
+    while(z_diff(1) < -M_PI)
+      z_diff(1) += 2.0 * M_PI;
+  }
+
+  x_ = x_ + K * z_diff;
+  P_ = P_ - K * s * K.transpose();
+}
