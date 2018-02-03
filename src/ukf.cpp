@@ -65,15 +65,17 @@ UKF::UKF() {
   lambda_ = 3 - n_aug;
   weights_ = VectorXd(n_sig_);
 
+#if 0
   /* Init Measurement Noise Covariance Matrices */
-  R_radar_ = MatrixXd(3, 3);
-  R_radar_ << pow(std_radr_, 2), 0, 0,
+  RR = MatrixXd(3, 3);
+  RR << pow(std_radr_, 2), 0, 0,
               0, pow(std_radphi_, 2), 0,
               0, 0, pow(std_radrd_, 2);
 
-  R_lidar_ = MatrixXd(2, 2);
-  R_lidar_ << pow(std_laspx_, 2), 0,
+  RL = MatrixXd(2, 2);
+  RL << pow(std_laspx_, 2), 0,
               0, pow(std_laspy_, 2);
+#endif
 }
 
 UKF::~UKF() {}
@@ -330,10 +332,14 @@ void UKF::UpdateConditionalUKF(MeasurementPackage mp, MatrixXd zs, int n_z)
 
   MatrixXd R = MatrixXd(n_z, n_z);
 
+#if 0
   if(mp.sensor_type_ == MeasurementPackage::RADAR)
-    R = R_radar_;
   else if(mp.sensor_type_ == MeasurementPackage::LASER)
-    R = R_lidar_;
+#endif
+
+  R << pow(std_radr_, 2), 0, 0,
+       0, pow(std_radphi_, 2), 0,
+       0, 0, pow(std_radrd_, 2);
 
   S = S + R;
 
