@@ -64,6 +64,9 @@ public:
   ///* Augmented state dimension
   int n_aug_;
 
+  // Num of Sigma Points
+  int n_sig_;
+
   ///* Sigma point spreading parameter
   double lambda_;
 
@@ -71,7 +74,7 @@ public:
   double NIS_radar_;
 
   // NIS Lidar
-  double NIS_lidar_;
+  double NIS_laser_;
 
 
   /**
