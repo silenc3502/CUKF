@@ -259,6 +259,14 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the lidar NIS.
   */
+
+  // Lidar needs 2 by 2
+  int n_z = 2;
+
+  // Matrix for Sigma Points
+  MatrixXd Zsig = Xsig_pred_.block(0, 0, n_z, n_sig_);
+
+  UpdateConditionalUKF(meas_package, Zsig, n_z)
 }
 
 /**
