@@ -391,4 +391,9 @@ void UKF::UpdateConditionalUKF(MeasurementPackage mp, MatrixXd zs, int n_z)
 
   x_ = x_ + K * z_diff;
   P_ = P_ - K * s * K.transpose();
+
+  if(mp.sensor_type_ == MeasurementPackage::RADAR)
+    NIS_radar_ = z.transpose() * S.inverse() * z;
+  else if(mp.sensor_type_ == MeasurementPackage::LASER)
+    NIS_laser_ = z.transpose() * S.inverse() * z;
 }

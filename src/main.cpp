@@ -108,6 +108,9 @@ int main()
           //Call ProcessMeasurment(meas_package) for Kalman filter
     	  ukf.ProcessMeasurement(meas_package);    	  
 
+          cout << "NIS_laser : " << ukf.NIS_laser_ << endl;
+          cout << "NIS_radar : " << ukf.NIS_radar_ << endl;
+
     	  //Push the current estimated x,y positon from the Kalman filter's state vector
 
     	  VectorXd estimate(4);
